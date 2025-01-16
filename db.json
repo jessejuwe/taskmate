@@ -1,0 +1,76 @@
+{
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Complete Documentation",
+      "description": "Write comprehensive documentation for the new feature",
+      "priority": "high",
+      "category": "work",
+      "status": "todo",
+      "order": 0,
+      "dueDate": "2024-04-20T00:00:00.000Z",
+      "createdAt": "2024-03-14T10:00:00.000Z",
+      "updatedAt": "2025-01-16T00:23:30.928Z"
+    },
+    {
+      "id": "2",
+      "title": "Weekly Team Meeting",
+      "description": "Discuss project progress and address blockers",
+      "priority": "medium",
+      "category": "work",
+      "status": "completed",
+      "order": 1,
+      "dueDate": "2024-03-20T15:00:00.000Z",
+      "createdAt": "2024-03-10T10:00:00.000Z",
+      "updatedAt": "2025-01-16T03:35:04.800Z"
+    },
+    {
+      "id": "3",
+      "title": "Buy Groceries",
+      "description": "Purchase vegetables, fruits, and snacks for the week",
+      "priority": "low",
+      "category": "personal",
+      "status": "completed",
+      "order": 2,
+      "dueDate": "2024-03-16T18:00:00.000Z",
+      "createdAt": "2024-03-14T12:00:00.000Z",
+      "updatedAt": "2025-01-15T15:13:53.281Z"
+    },
+    {
+      "id": "4",
+      "title": "Gym Workout",
+      "description": "Complete upper body workout routine",
+      "priority": "medium",
+      "category": "personal",
+      "status": "todo",
+      "order": 3,
+      "dueDate": "2024-03-13T20:00:00.000Z",
+      "createdAt": "2024-03-12T16:00:00.000Z",
+      "updatedAt": "2025-01-15T15:11:12.407Z"
+    },
+    {
+      "id": "5",
+      "title": "Read New Book",
+      "description": "Start reading 'Atomic Habits' by James Clear",
+      "priority": "low",
+      "category": "personal",
+      "status": "todo",
+      "order": 4,
+      "dueDate": "2024-03-25T00:00:00.000Z",
+      "createdAt": "2024-03-14T13:00:00.000Z",
+      "updatedAt": "2025-01-16T03:33:34.492Z"
+    },
+    {
+      "id": "8",
+      "title": "Prepare Presentation",
+      "description": "Create slides for the quarterly review meeting",
+      "priority": "medium",
+      "category": "work",
+      "status": "todo",
+      "order": 7,
+      "dueDate": "2024-03-19T12:00:00.000Z",
+      "createdAt": "2024-03-14T11:00:00.000Z",
+      "updatedAt": "2024-03-14T11:00:00.000Z"
+    }
+  ]
+}
