@@ -26,8 +26,13 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
   const addTask = async (task: Task) => {
     try {
-      const newTask = await addTaskToDb(task);
-      setTasks([newTask, ...tasks]);
+      if (process.env.NODE_ENV === "production") {
+        setTasks([task, ...tasks]);
+      } else {
+        const newTask = await addTaskToDb(task);
+        setTasks([newTask, ...tasks]);
+      }
+
       toaster.success({
         title: "Success",
         description: "Task created successfully",
@@ -43,12 +48,16 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
     try {
-      await updateTaskInDb(id, updates);
+      if (process.env.NODE_ENV === "development") {
+        await updateTaskInDb(id, updates);
+      }
+
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
           task.id === id ? { ...task, ...updates } : task
         )
       );
+
       toaster.success({
         title: "Success",
         description: "Task updated successfully",
@@ -80,10 +89,14 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
   const updateStatus = async (id: string, status: TaskStatus) => {
     try {
-      await updateTaskInDb(id, { status });
+      if (process.env.NODE_ENV === "development") {
+        await updateTaskInDb(id, { status });
+      }
+
       setTasks((prevTasks) =>
         prevTasks.map((task) => (task.id === id ? { ...task, status } : task))
       );
+
       toaster.success({
         title: "Success",
         description: "Task status updated",
@@ -98,8 +111,12 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
   const removeTask = async (id: string) => {
     try {
-      await deleteTaskToDb(id);
+      if (process.env.NODE_ENV === "development") {
+        await deleteTaskToDb(id);
+      }
+
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+
       toaster.success({
         title: "Success",
         description: "Task removed successfully",
@@ -124,6 +141,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
             .filter((task) => task.status !== status) // Remove tasks in the column
             .concat(updatedTasks) // Add updated, reordered tasks
       );
+
       toaster.success({
         title: "Success",
         description: "Tasks reordered successfully",
