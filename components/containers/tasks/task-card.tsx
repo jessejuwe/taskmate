@@ -99,12 +99,20 @@ export default function TaskCard({ task }: TaskCardProps) {
             >
               <Editable.RootProvider
                 id={titleID}
-                className="text-base font-semibold"
+                className="text-base font-semibold truncate"
                 value={titleEditable}
               >
                 <Editable.Preview id={titleID} className="truncate" />
                 <Editable.Input />
                 <Editable.Control>
+                  <Editable.EditTrigger
+                    asChild
+                    display={{ base: "flex", lg: "none" }}
+                  >
+                    <IconButton variant="ghost" size="xs">
+                      <LuPencilLine />
+                    </IconButton>
+                  </Editable.EditTrigger>
                   <Editable.CancelTrigger asChild>
                     <IconButton
                       className="icon-btn"
@@ -185,17 +193,20 @@ export default function TaskCard({ task }: TaskCardProps) {
           >
             <Editable.RootProvider
               id={descriptionID}
-              className="text-sm text-muted-foreground mb-4"
+              className="text-sm text-muted-foreground mb-4 truncate"
               value={descriptionEditable}
             >
               <Editable.Preview id={descriptionID} className="truncate" />
               <Editable.Input />
               <Editable.Control>
-                {/* <Editable.EditTrigger asChild>
+                <Editable.EditTrigger
+                  asChild
+                  display={{ base: "flex", lg: "none" }}
+                >
                   <IconButton variant="ghost" size="xs">
                     <LuPencilLine />
                   </IconButton>
-                </Editable.EditTrigger> */}
+                </Editable.EditTrigger>
                 <Editable.CancelTrigger asChild>
                   <IconButton className="icon-btn" variant="outline" size="xs">
                     <LuX />
