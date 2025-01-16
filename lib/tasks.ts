@@ -1,6 +1,7 @@
-import { Task } from "@/types/task";
+import { Task } from "@/types/task.types";
 
-const API_URL = "http://localhost:3081";
+const API_URL = "/api";
+// const API_URL = "http://localhost:3081";
 
 export const getTasks = async (): Promise<Task[]> => {
   const response = await fetch(`${API_URL}/tasks`);
@@ -13,26 +14,19 @@ export const getTasks = async (): Promise<Task[]> => {
 export const addTask = async (
   task: Omit<Task, "id" | "createdAt" | "updatedAt">
 ): Promise<Task> => {
-  const newTask = {
-    ...task,
-    id: Math.random().toString(36).substring(7),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
   const response = await fetch(`${API_URL}/tasks`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(newTask),
+    body: JSON.stringify(task), // Only send minimal data
   });
 
   if (!response.ok) {
     throw new Error("Failed to create task");
   }
 
-  return response.json();
+  return response.json(); // Server handles task creation
 };
 
 export const updateTask = async (
@@ -44,10 +38,7 @@ export const updateTask = async (
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    }),
+    body: JSON.stringify(updates),
   });
 
   if (!response.ok) {
@@ -94,7 +85,7 @@ export const reorderTasks = async (
   }
 
   // Parse and return the updated tasks
-  const updatedTasks = await response.json();
+  const updatedTasks: Task[] = await response.json();
 
   // Ensure the returned tasks are sorted by their "order" field
   return updatedTasks.sort((a: Task, b: Task) => a.order - b.order);

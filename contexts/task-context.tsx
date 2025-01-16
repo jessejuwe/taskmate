@@ -7,7 +7,7 @@ import { addTask as addTaskToDb } from "@/lib/tasks";
 import { deleteTask as deleteTaskToDb } from "@/lib/tasks";
 import { reorderTasks as reorderTasksInDb } from "@/lib/tasks";
 import { updateTask as updateTaskInDb } from "@/lib/tasks";
-import { Task, TaskStatus } from "@/types/task";
+import { Task, TaskStatus } from "@/types/task.types";
 import { saveToLocalStorage } from "@/utils/localStorage";
 
 interface TaskContextType {
@@ -156,20 +156,29 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const reorderTasks = async (status: TaskStatus, reorderedTasks: Task[]) => {
     try {
       if (process.env.NODE_ENV === "production") {
-        const updatedTasks = tasks
-          .filter((task) => task.status !== status) // Remove tasks in the column
-          .concat(reorderedTasks); // Add reordered tasks
+        // Update tasks only after successfully reordering
+        const updatedTasks = tasks.map((task) => {
+          // For tasks in this status, update them with the reordered tasks
+          if (task.status === status) {
+            return (
+              reorderedTasks.find(
+                (reorderedTask) => reorderedTask.id === task.id
+              ) || task
+            );
+          }
+          return task; // Keep tasks in other statuses unchanged
+        });
+
         setTasks(updatedTasks);
         persistTasks(updatedTasks);
       } else {
-        const updatedTasksFromDb = await reorderTasksInDb(status, reorderedTasks); // prettier-ignore
-
-        setTasks(
-          (prevTasks) =>
-            prevTasks
-              .filter((task) => task.status !== status) // Remove tasks in the column
-              .concat(updatedTasksFromDb) // Add updated tasks from DB
+        // In non-production, assume that reorderedTasks from DB are correct
+        const updatedTasksFromDb = await reorderTasksInDb(
+          status,
+          reorderedTasks
         );
+
+        setTasks(updatedTasksFromDb);
       }
 
       toaster.success({
@@ -183,6 +192,37 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
       });
     }
   };
+
+  // const reorderTasks = async (status: TaskStatus, reorderedTasks: Task[]) => {
+  //   try {
+  //     if (process.env.NODE_ENV === "production") {
+  //       const updatedTasks = tasks
+  //         .filter((task) => task.status !== status) // Remove tasks in the column
+  //         .concat(reorderedTasks); // Add reordered tasks
+  //       setTasks(updatedTasks);
+  //       persistTasks(updatedTasks);
+  //     } else {
+  //       const updatedTasksFromDb = await reorderTasksInDb(status, reorderedTasks); // prettier-ignore
+
+  //       setTasks(
+  //         (prevTasks) =>
+  //           prevTasks
+  //             .filter((task) => task.status !== status) // Remove tasks in the column
+  //             .concat(updatedTasksFromDb) // Add updated tasks from DB
+  //       );
+  //     }
+
+  //     toaster.success({
+  //       title: "Success",
+  //       description: "Tasks reordered successfully",
+  //     });
+  //   } catch (error) {
+  //     toaster.error({
+  //       title: "Error",
+  //       description: "Failed to reorder tasks. Please try again.",
+  //     });
+  //   }
+  // };
 
   const loadTasks = (loadedTasks: Task[]) => {
     setTasks(loadedTasks);

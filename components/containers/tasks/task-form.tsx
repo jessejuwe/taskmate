@@ -17,7 +17,7 @@ import { SelectContent, SelectItem, SelectRoot } from "@/components/ui/select";
 import { SelectTrigger, SelectValueText } from "@/components/ui/select";
 import { useTaskContext } from "@/contexts/task-context";
 import { cn } from "@/utils/utils";
-import { Task } from "@/types/task";
+import { Task } from "@/types/task.types";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),

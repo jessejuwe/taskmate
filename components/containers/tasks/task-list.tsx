@@ -3,7 +3,7 @@
 import { useDroppable } from "@dnd-kit/core";
 
 import TaskCard from "./task-card";
-import { Task, TaskStatus } from "@/types/task";
+import { Task, TaskStatus } from "@/types/task.types";
 
 interface TaskListProps {
   tasks: Task[];

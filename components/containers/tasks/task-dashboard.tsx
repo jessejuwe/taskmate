@@ -7,7 +7,7 @@ import { TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { Box, Card, Center, createListCollection } from "@chakra-ui/react";
-import { Flex, Input, Spinner, Stack, Text } from "@chakra-ui/react";
+import { Flex, Highlight, Input, Spinner, Stack, Text } from "@chakra-ui/react";
 
 import TaskList from "@/components/containers/tasks/task-list";
 import { InputGroup } from "@/components/ui/input-group";
@@ -18,7 +18,7 @@ import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useTaskContext } from "@/contexts/task-context";
 import { getTasks } from "@/lib/tasks";
-import { Task, TaskStatus } from "@/types/task";
+import { Task, TaskStatus } from "@/types/task.types";
 import { getFromLocalStorage } from "@/utils/localStorage";
 
 export default function TaskDashboard() {
@@ -26,7 +26,8 @@ export default function TaskDashboard() {
   const [filterCategory, setFilterCategory] = useState<string[]>(["all"]);
   const [loading, setLoading] = useState(true);
 
-  const { loadTasks, tasks, updateStatus } = useTaskContext();
+  const { loadTasks, tasks, reorderTasks, updateTask, updateStatus } =
+    useTaskContext();
 
   const mouseSensor = useSensor(MouseSensor);
   const touchSensor = useSensor(TouchSensor);
@@ -68,25 +69,110 @@ export default function TaskDashboard() {
     }
   };
 
+  // const handleDragEnd = (event: DragEndEvent) => {
+  //   const { active, over } = event;
+
+  //   // If no valid drop target, exit
+  //   if (!over) return;
+
+  //   const activeTask = tasks.find((task) => task.id === active.id);
+  //   if (!activeTask) return;
+
+  //   const newStatus = over.id as TaskStatus;
+  //   if (activeTask.status !== newStatus) {
+  //     updateStatus(activeTask.id, newStatus);
+  //   }
+  // };
+
+  // const handleDragEnd = (event: DragEndEvent) => {
+  //   const { active, over } = event;
+
+  //   // If no valid drop target, exit
+  //   if (!over) return;
+
+  //   // If the task is dropped within the same status column, reorder the tasks
+  //   if (active.id !== over.id) {
+  //     const activeIndex = tasks.findIndex((task) => task.id === active.id);
+  //     const overIndex = tasks.findIndex((task) => task.id === over.id);
+
+  //     // Swap positions only if both tasks are in the same column
+  //     if (tasks[activeIndex]?.status === tasks[overIndex]?.status) {
+  //       const reorderedTasks = arrayMove(
+  //         tasks.filter((task) => task.status === tasks[activeIndex].status),
+  //         activeIndex,
+  //         overIndex
+  //       );
+
+  //       const otherTasks = tasks.filter(
+  //         (task) => task.status !== tasks[activeIndex].status
+  //       );
+
+  //       setTasks([...otherTasks, ...reorderedTasks]);
+  //       persistTasks([...otherTasks, ...reorderedTasks]);
+  //       return;
+  //     }
+  //   }
+
+  //   // Otherwise, update the task's status
+  //   const activeTask = tasks.find((task) => task.id === active.id);
+  //   if (!activeTask) return;
+
+  //   const newStatus = over.id as TaskStatus;
+  //   if (activeTask.status !== newStatus) {
+  //     updateStatus(activeTask.id, newStatus);
+  //   }
+  // };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    // If no valid drop target, exit
     if (!over) return;
 
+    // Find the active and over tasks
     const activeTask = tasks.find((task) => task.id === active.id);
+    const overTask = tasks.find((task) => task.id === over.id);
+
     if (!activeTask) return;
 
+    // Reorder within the same status column
+    if (activeTask.status === overTask?.status) {
+      const tasksInColumn = tasks.filter(
+        (task) => task.status === activeTask.status
+      );
+      const activeIndex = tasksInColumn.findIndex(
+        (task) => task.id === active.id
+      );
+      const overIndex = tasksInColumn.findIndex((task) => task.id === over.id);
+
+      const reorderedTasks = arrayMove(tasksInColumn, activeIndex, overIndex);
+
+      reorderTasks(activeTask.status, reorderedTasks); // Call context function here
+      return;
+    }
+
+    // Otherwise, move to a different status column
     const newStatus = over.id as TaskStatus;
     if (activeTask.status !== newStatus) {
-      updateStatus(activeTask.id, newStatus);
+      updateTask(activeTask.id, activeTask);
+      // updateStatus(activeTask.id, newStatus); // Use context updateStatus for status change
     }
   };
 
+  // const filteredTasks = tasks.filter((task) => {
+  //   const matchesSearch =
+  //     task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     task.description.toLowerCase().includes(searchQuery.toLowerCase());
+  //   const matchesCategory =
+  //     filterCategory[0] === "all" || task.category === filterCategory[0];
+  //   return matchesSearch && matchesCategory;
+  // });
+
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (task.title?.toLowerCase().includes(searchQuery.toLowerCase()) ??
+        false) ||
+      (task.description?.toLowerCase().includes(searchQuery.toLowerCase()) ??
+        false);
     const matchesCategory =
       filterCategory[0] === "all" || task.category === filterCategory[0];
     return matchesSearch && matchesCategory;
@@ -168,19 +254,35 @@ export default function TaskDashboard() {
       </Stack>
 
       <Stack align={{ base: "start", lg: "center" }} mb={8}>
+        <Text fontSize="lg" fontWeight={600}>
+          Guide
+        </Text>
+
         <Stack direction={{ base: "column", lg: "row" }}>
-          <Text>
-            Not ready for a task? Move it to{" "}
-            <span className="font-semibold text-orange-500">TODO</span>
-          </Text>
-          <Text>
-            Working on a task? Move it to{" "}
-            <span className="font-semibold text-blue-500">IN PROGRESS</span>
-          </Text>
-          <Text>
-            Done with a task? Move it to{" "}
-            <span className="font-semibold text-green-500">COMPLETED</span>
-          </Text>
+          <Flex gap={1}>
+            <Highlight
+              query="TODO"
+              styles={{ color: "orange.500", fontWeight: "semibold" }}
+            >
+              1. Not ready for a task? Move it to TODO
+            </Highlight>
+          </Flex>
+          <Flex gap={1}>
+            <Highlight
+              query="IN PROGRESS"
+              styles={{ color: "blue.500", fontWeight: "semibold" }}
+            >
+              2. Working on a task? Move it to IN PROGRESS
+            </Highlight>
+          </Flex>
+          <Flex gap={1}>
+            <Highlight
+              query="COMPLETED"
+              styles={{ color: "green.500", fontWeight: "semibold" }}
+            >
+              3. Done with a task? Move it to COMPLETED
+            </Highlight>
+          </Flex>
         </Stack>
 
         <div className="flex items-center justify-start gap-1">
@@ -203,7 +305,7 @@ export default function TaskDashboard() {
           gap="3"
           width="full"
         >
-          {columns.map((status) => (
+          {/* {columns.map((status) => (
             <Card.Root
               key={status}
               className={`w-full bg-${status === "todo" ? "orange" : status === "in-progress" ? "blue" : "green"}-300 dark:bg-${status === "todo" ? "orange" : status === "in-progress" ? "blue" : "green"}-900`}
@@ -221,9 +323,9 @@ export default function TaskDashboard() {
                 />
               </Card.Body>
             </Card.Root>
-          ))}
+          ))} */}
 
-          {/* {columns.map((status) => (
+          {columns.map((status) => (
             <SortableContext
               key={status}
               items={tasks
@@ -247,7 +349,7 @@ export default function TaskDashboard() {
                 </Card.Body>
               </Card.Root>
             </SortableContext>
-          ))} */}
+          ))}
 
           {/* <Card.Root className="w-full bg-orange-300 dark:bg-orange-900">
             <Card.Header>

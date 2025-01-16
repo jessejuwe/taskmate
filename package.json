@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3080",
-    "dev:concurrent": "concurrently \"next dev --turbopack -p 3080\" \"json-server --watch db.json --port 3081\"",
     "dev:turbo": "next dev --turbopack -p 3080",
+    "json-server": "json-server --watch db.json --port 3081",
+    "dev:concurrent": "concurrently \"npm run dev:turbo\" \"npm run mock-server\"",
+    "mock-server": "node mock-server.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "json-server": "json-server --watch db.json --port 3081"
+    "lint": "next lint"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.3.1",
@@ -18,6 +19,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@emotion/react": "^11.14.0",
     "@hookform/resolvers": "^3.10.0",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.47.15",
     "@tanstack/react-query": "^5.64.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -36,7 +39,8 @@
   "devDependencies": {
     "@chakra-ui/cli": "^3.3.1",
     "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
+    "@types/json-server": "^0.14.7",
+    "@types/node": "^20.17.14",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "concurrently": "^9.1.2",
@@ -44,6 +48,7 @@
     "eslint-config-next": "15.1.4",
     "json-server": "^1.0.0-beta.3",
     "postcss": "^8",
+    "supabase": "^2.6.8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }

@@ -67,10 +67,46 @@
       "priority": "medium",
       "category": "work",
       "status": "todo",
-      "order": 7,
+      "order": 5,
       "dueDate": "2024-03-19T12:00:00.000Z",
       "createdAt": "2024-03-14T11:00:00.000Z",
       "updatedAt": "2024-03-14T11:00:00.000Z"
+    },
+    {
+      "id": "z0kxe8",
+      "title": "Test Reorder",
+      "description": "Testing the reorder function",
+      "priority": "medium",
+      "category": "urgent",
+      "dueDate": "2025-01-18T23:00:00.000Z",
+      "status": "in-progress",
+      "order": 6,
+      "createdAt": "2025-01-16T09:18:21.860Z",
+      "updatedAt": "2025-01-16T09:19:34.217Z"
+    },
+    {
+      "id": "tpanb",
+      "title": "Test Sorting",
+      "description": "Test the sorting capability",
+      "priority": "low",
+      "category": "work",
+      "dueDate": "2025-01-29T23:00:00.000Z",
+      "status": "in-progress",
+      "order": 7,
+      "createdAt": "2025-01-16T09:20:27.698Z",
+      "updatedAt": "2025-01-16T09:20:51.417Z"
+    },
+    {
+      "title": "Testing Dropping",
+      "description": "Testing the dropping function",
+      "priority": "low",
+      "category": "urgent",
+      "dueDate": "2025-01-20T23:00:00.000Z",
+      "id": "s6zci8",
+      "status": "todo",
+      "order": 8,
+      "createdAt": "2025-01-16T12:18:55.364Z",
+      "updatedAt": "2025-01-16T12:18:55.364Z"
     }
   ]
 }

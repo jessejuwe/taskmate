@@ -10,7 +10,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { format } from "date-fns";
 
 import { Tooltip } from "@/components/ui/tooltip";
-import { Task } from "@/types/task";
+import { Task } from "@/types/task.types";
 import { useTaskContext } from "@/contexts/task-context";
 import { LuCheck, LuPencilLine, LuX } from "react-icons/lu";
 
@@ -46,7 +46,8 @@ export default function TaskCard({ task }: TaskCardProps) {
     setActivatorNodeRef,
     setNodeRef,
     transform,
-  } = useDraggable({ id: task.id });
+    transition,
+  } = useSortable({ id: task.id });
 
   const titleEditable = useEditable({
     ids: { root: titleID },
@@ -69,6 +70,7 @@ export default function TaskCard({ task }: TaskCardProps) {
   });
 
   const style: React.CSSProperties = {
+    transition,
     transform: CSS.Translate.toString(transform),
     touchAction: "none",
     zIndex: isDragging ? 999 : "auto",
@@ -99,12 +101,20 @@ export default function TaskCard({ task }: TaskCardProps) {
             >
               <Editable.RootProvider
                 id={titleID}
-                className="text-base font-semibold"
+                className="text-base font-semibold truncate"
                 value={titleEditable}
               >
                 <Editable.Preview id={titleID} className="truncate" />
                 <Editable.Input />
                 <Editable.Control>
+                  <Editable.EditTrigger
+                    asChild
+                    display={{ base: "flex", lg: "none" }}
+                  >
+                    <IconButton variant="ghost" size="xs">
+                      <LuPencilLine />
+                    </IconButton>
+                  </Editable.EditTrigger>
                   <Editable.CancelTrigger asChild>
                     <IconButton
                       className="icon-btn"
@@ -191,11 +201,14 @@ export default function TaskCard({ task }: TaskCardProps) {
               <Editable.Preview id={descriptionID} className="truncate" />
               <Editable.Input />
               <Editable.Control>
-                {/* <Editable.EditTrigger asChild>
+                <Editable.EditTrigger
+                  asChild
+                  display={{ base: "flex", lg: "none" }}
+                >
                   <IconButton variant="ghost" size="xs">
                     <LuPencilLine />
                   </IconButton>
-                </Editable.EditTrigger> */}
+                </Editable.EditTrigger>
                 <Editable.CancelTrigger asChild>
                   <IconButton className="icon-btn" variant="outline" size="xs">
                     <LuX />
