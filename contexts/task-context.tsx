@@ -8,8 +8,7 @@ import { deleteTask as deleteTaskToDb } from "@/lib/tasks";
 import { reorderTasks as reorderTasksInDb } from "@/lib/tasks";
 import { updateTask as updateTaskInDb } from "@/lib/tasks";
 import { Task, TaskStatus } from "@/types/task";
-import { deleteFromLocalStorage, getFromLocalStorage, } from "@/utils/localStorage"; // prettier-ignore
-import { saveToLocalStorage, updateLocalStorage } from "@/utils/localStorage";
+import { saveToLocalStorage } from "@/utils/localStorage";
 
 interface TaskContextType {
   tasks: Task[];
@@ -24,13 +23,7 @@ interface TaskContextType {
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export const TaskProvider = ({ children }: { children: ReactNode }) => {
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    // Initialize tasks from local storage in production
-    if (process.env.NODE_ENV === "production") {
-      return getFromLocalStorage<Task[]>("tasks") || [];
-    }
-    return [];
-  });
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   const persistTasks = (updatedTasks: Task[]) => {
     // Save tasks to local storage in production

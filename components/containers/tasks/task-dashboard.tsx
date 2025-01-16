@@ -15,15 +15,15 @@ import { ProgressBar, ProgressRoot } from "@/components/ui/progress";
 import { SelectContent, SelectItem } from "@/components/ui/select";
 import { SelectRoot, SelectTrigger, SelectValueText } from "@/components/ui/select"; //prettier-ignore
 import { toaster } from "@/components/ui/toaster";
+import { Tooltip } from "@/components/ui/tooltip";
 import { useTaskContext } from "@/contexts/task-context";
 import { getTasks } from "@/lib/tasks";
-import { TaskStatus } from "@/types/task";
-import { Tooltip } from "@/components/ui/tooltip";
+import { Task, TaskStatus } from "@/types/task";
+import { getFromLocalStorage } from "@/utils/localStorage";
 
 export default function TaskDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState<string[]>(["all"]);
-  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const { loadTasks, tasks, updateStatus } = useTaskContext();
@@ -43,13 +43,13 @@ export default function TaskDashboard() {
 
   // Prevent hydration mismatch by mounting after initial render
   useEffect(() => {
-    setMounted(true);
     loadTasksFromDB();
-  }, []); // eslint-disable-line
+  }, []);
 
   const loadTasksFromDB = async () => {
     if (process.env.NODE_ENV === "production") {
-      loadTasks([]);
+      const data = getFromLocalStorage<Task[]>("tasks") || [];
+      loadTasks(data);
       setLoading(false);
       return;
     }
@@ -94,11 +94,6 @@ export default function TaskDashboard() {
 
   const completedTasksCount = tasks.filter((task) => task.status === "completed").length; // prettier-ignore
   const progressPercentage = tasks.length > 0 ? (completedTasksCount / tasks.length) * 100 : 0; // prettier-ignore
-
-  // Don't render theme toggle until mounted to prevent hydration mismatch
-  if (!mounted) {
-    return null;
-  }
 
   if (loading) {
     return (
