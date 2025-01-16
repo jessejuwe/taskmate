@@ -8,6 +8,8 @@ import { deleteTask as deleteTaskToDb } from "@/lib/tasks";
 import { reorderTasks as reorderTasksInDb } from "@/lib/tasks";
 import { updateTask as updateTaskInDb } from "@/lib/tasks";
 import { Task, TaskStatus } from "@/types/task";
+import { deleteFromLocalStorage, getFromLocalStorage, } from "@/utils/localStorage"; // prettier-ignore
+import { saveToLocalStorage, updateLocalStorage } from "@/utils/localStorage";
 
 interface TaskContextType {
   tasks: Task[];
@@ -22,15 +24,31 @@ interface TaskContextType {
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export const TaskProvider = ({ children }: { children: ReactNode }) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    // Initialize tasks from local storage in production
+    if (process.env.NODE_ENV === "production") {
+      return getFromLocalStorage<Task[]>("tasks") || [];
+    }
+    return [];
+  });
+
+  const persistTasks = (updatedTasks: Task[]) => {
+    // Save tasks to local storage in production
+    if (process.env.NODE_ENV === "production") {
+      saveToLocalStorage("tasks", updatedTasks);
+    }
+  };
 
   const addTask = async (task: Task) => {
     try {
       if (process.env.NODE_ENV === "production") {
+        const updatedTasks = [task, ...tasks];
         setTasks([task, ...tasks]);
+        persistTasks(updatedTasks);
       } else {
         const newTask = await addTaskToDb(task);
-        setTasks([newTask, ...tasks]);
+        const updatedTasks = [newTask, ...tasks];
+        setTasks(updatedTasks);
       }
 
       toaster.success({
@@ -48,15 +66,20 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
     try {
-      if (process.env.NODE_ENV === "development") {
-        await updateTaskInDb(id, updates);
-      }
-
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
+      if (process.env.NODE_ENV === "production") {
+        const updatedTasks = tasks.map((task) =>
           task.id === id ? { ...task, ...updates } : task
-        )
-      );
+        );
+        setTasks(updatedTasks);
+        persistTasks(updatedTasks);
+      } else {
+        await updateTaskInDb(id, updates);
+        setTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task.id === id ? { ...task, ...updates } : task
+          )
+        );
+      }
 
       toaster.success({
         title: "Success",
@@ -89,13 +112,18 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
   const updateStatus = async (id: string, status: TaskStatus) => {
     try {
-      if (process.env.NODE_ENV === "development") {
+      if (process.env.NODE_ENV === "production") {
+        const updatedTasks = tasks.map((task) =>
+          task.id === id ? { ...task, status } : task
+        );
+        setTasks(updatedTasks);
+        persistTasks(updatedTasks);
+      } else {
         await updateTaskInDb(id, { status });
+        setTasks((prevTasks) =>
+          prevTasks.map((task) => (task.id === id ? { ...task, status } : task))
+        );
       }
-
-      setTasks((prevTasks) =>
-        prevTasks.map((task) => (task.id === id ? { ...task, status } : task))
-      );
 
       toaster.success({
         title: "Success",
@@ -111,11 +139,14 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
   const removeTask = async (id: string) => {
     try {
-      if (process.env.NODE_ENV === "development") {
+      if (process.env.NODE_ENV === "production") {
+        const updatedTasks = tasks.filter((task) => task.id !== id);
+        setTasks(updatedTasks);
+        persistTasks(updatedTasks);
+      } else {
         await deleteTaskToDb(id);
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
       }
-
-      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
 
       toaster.success({
         title: "Success",
@@ -131,16 +162,22 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
   const reorderTasks = async (status: TaskStatus, reorderedTasks: Task[]) => {
     try {
-      // Send the reordered list to the backend
-      const updatedTasks = await reorderTasksInDb(status, reorderedTasks);
+      if (process.env.NODE_ENV === "production") {
+        const updatedTasks = tasks
+          .filter((task) => task.status !== status) // Remove tasks in the column
+          .concat(reorderedTasks); // Add reordered tasks
+        setTasks(updatedTasks);
+        persistTasks(updatedTasks);
+      } else {
+        const updatedTasksFromDb = await reorderTasksInDb(status, reorderedTasks); // prettier-ignore
 
-      // Update the local state
-      setTasks(
-        (prevTasks) =>
-          prevTasks
-            .filter((task) => task.status !== status) // Remove tasks in the column
-            .concat(updatedTasks) // Add updated, reordered tasks
-      );
+        setTasks(
+          (prevTasks) =>
+            prevTasks
+              .filter((task) => task.status !== status) // Remove tasks in the column
+              .concat(updatedTasksFromDb) // Add updated tasks from DB
+        );
+      }
 
       toaster.success({
         title: "Success",
@@ -154,8 +191,12 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const loadTasks = (tasks: Task[]) => {
-    setTasks(tasks);
+  const loadTasks = (loadedTasks: Task[]) => {
+    setTasks(loadedTasks);
+
+    if (process.env.NODE_ENV === "production") {
+      persistTasks(loadedTasks);
+    }
   };
 
   const value = {
