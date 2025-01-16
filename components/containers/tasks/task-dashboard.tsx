@@ -48,7 +48,11 @@ export default function TaskDashboard() {
   }, []); // eslint-disable-line
 
   const loadTasksFromDB = async () => {
-    setLoading(true);
+    if (process.env.NODE_ENV === "production") {
+      loadTasks([]);
+      setLoading(false);
+      return;
+    }
 
     try {
       const loadedTasks = await getTasks();
